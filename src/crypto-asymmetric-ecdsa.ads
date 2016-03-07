@@ -52,16 +52,24 @@ package Crypto.Asymmetric.ECDSA is
 --   subtype Serialized_PubPrivSig
 --      is Bytes(1..(Public_Key_ECDSA'Size+Private_Key_ECDSA'Size+Signature_ECDSA'Size));
 
-   subtype Serialized_PubKey     is Bytes(1..192);
-   subtype Serialized_PrivKey    is Bytes(1..72);
-   subtype Serialized_Sig        is Bytes(1..48);
+   -- Note about serialization size: even though the actual keys
+   -- can have a smaller size, for simplicity the serialized size
+   -- is always the size of the ECDSA instantiation
+   subtype Serialized_PubKey
+      is Bytes(1..8*Big.Big_Unsigned'Size/8);
+   subtype Serialized_PrivKey
+      is Bytes(1..3*Big.Big_Unsigned'Size/8);
+   subtype Serialized_Sig
+      is Bytes(1..2*Big.Big_Unsigned'Size/8);
    subtype Serialized_PubSig
       is Bytes(1..(Serialized_PubKey'Length+Serialized_Sig'Length));
    subtype Serialized_PubPrivSig
       is Bytes(1..(Serialized_PubKey'Length
                   +Serialized_PrivKey'Length
-                  +Serialized_Sig'Length
-                  -48)); -- we can save this because Q is already present in the PubKey
+                  -2*Big.Big_Unsigned'Size/8
+                  +Serialized_Sig'Length));
+                  -- we can save this from the PrivKey because
+                  -- Q is already present in the PubKey
 
 -------------------------------------------------------------------------------
 

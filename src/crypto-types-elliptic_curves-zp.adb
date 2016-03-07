@@ -330,11 +330,20 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
 
    function Serialize(ECZ : in Elliptic_Curve_Zp) return Serialized_EC is
       use Crypto.Types;
-      SEC : Serialized_EC;
+      SEC               : Serialized_EC := (others => 0);
+      Offset            : Natural := 1;
+      Length            : Natural := 0;
    begin -- delete magic numbers
-      SEC(  1.. 24) := To_Bytes( ECZ.A );
-      SEC( 25.. 48) := To_Bytes( ECZ.B );
-      SEC( 49.. 72) := To_Bytes( ECZ.P );
+      Length := Length + To_Bytes( ECZ.A )'Length;
+      SEC(Offset..Length) := To_Bytes( ECZ.A );
+      Offset := Length + 1;
+
+      Length := Length + To_Bytes( ECZ.B )'Length;
+      SEC(Offset..Length) := To_Bytes( ECZ.B );
+      Offset := Length + 1;
+
+      Length := Length + To_Bytes( ECZ.B )'Length;
+      SEC(Offset..Length) := To_Bytes( ECZ.P );
       return SEC;
    end Serialize;
 
