@@ -44,6 +44,25 @@ package Crypto.Asymmetric.ECDSA is
    type Private_Key_ECDSA is private;
    type Signature_ECDSA is private;
 
+--   subtype Serialized_PubKey     is Bytes(1..Public_Key_ECDSA'Size);
+--   subtype Serialized_PrivKey    is Bytes(1..Private_Key_ECDSA'Size);
+--   subtype Serialized_Sig        is Bytes(1..Signature_ECDSA'Size);
+--   subtype Serialized_PubSig
+--      is Bytes(1..(Public_Key_ECDSA'Size+Signature_ECDSA'Size));
+--   subtype Serialized_PubPrivSig
+--      is Bytes(1..(Public_Key_ECDSA'Size+Private_Key_ECDSA'Size+Signature_ECDSA'Size));
+
+   subtype Serialized_PubKey     is Bytes(1..192);
+   subtype Serialized_PrivKey    is Bytes(1..72);
+   subtype Serialized_Sig        is Bytes(1..48);
+   subtype Serialized_PubSig
+      is Bytes(1..(Serialized_PubKey'Length+Serialized_Sig'Length));
+   subtype Serialized_PubPrivSig
+      is Bytes(1..(Serialized_PubKey'Length
+                  +Serialized_PrivKey'Length
+                  +Serialized_Sig'Length
+                  -48)); -- we can save this because Q is already present in the PubKey
+
 -------------------------------------------------------------------------------
 
    procedure Gen_Public_Key(
@@ -90,8 +109,62 @@ package Crypto.Asymmetric.ECDSA is
 
 -------------------------------------------------------------------------------
 
+   procedure Serialize_PubPrivSig
+      ( Public_Key  : in     Public_Key_ECDSA;
+        Private_Key : in     Private_Key_ECDSA;
+        Signature   : in     Signature_ECDSA;
+        Stream      :    out Serialized_PubPrivSig );
+
+-------------------------------------------------------------------------------
+
+   procedure Deserialize_PubPrivSig
+      ( Stream      : in     Serialized_PubPrivSig;
+        Public_Key  :    out Public_Key_ECDSA;
+        Private_Key :    out Private_Key_ECDSA;
+        Signature   :    out Signature_ECDSA );
+
+-------------------------------------------------------------------------------
+
+   procedure Serialize_PubSig
+      ( Public_Key  : in     Public_Key_ECDSA;
+        Signature   : in     Signature_ECDSA;
+        Stream      :    out Serialized_PubSig );
+
+-------------------------------------------------------------------------------
+
+   procedure Deserialize_PubSig
+      ( Stream      : in     Serialized_PubSig;
+        Public_Key  :    out Public_Key_ECDSA;
+        Signature   :    out Signature_ECDSA );
+
+-------------------------------------------------------------------------------
+
+   function Serialize_Public_key(
+                  PK : in Public_Key_ECDSA) return Serialized_PubKey;
+
+   function Serialize_Private_key(
+                  PK : in Private_Key_ECDSA) return Serialized_PrivKey;
+
+   function Serialize_Signature(
+                  Sig : in Signature_ECDSA) return Serialized_Sig;
+
+-------------------------------------------------------------------------------
+
+   function Deserialize_Public_Key(
+                  SPK : in Serialized_PubKey) return Public_Key_ECDSA;
+
+   function Deserialize_Private_Key(
+                  SPK : in Serialized_PrivKey) return Private_Key_ECDSA;
+
+   function Deserialize_Signature(
+                  SSig : in Serialized_Sig) return Signature_ECDSA;
+   
+   ---------------------------------------------------------------------------
+   --------------------------------PRIVATE------------------------------------
+   ---------------------------------------------------------------------------
 
 private
+
 
    type ECDSA_P_KEY is record
       E : Elliptic_Curve_Zp;

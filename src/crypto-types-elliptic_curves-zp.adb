@@ -328,4 +328,27 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
    
    ---------------------------------------------------------------------------
 
+   function Serialize(ECZ : in Elliptic_Curve_Zp) return Serialized_EC is
+      use Crypto.Types;
+      SEC : Serialized_EC;
+   begin -- delete magic numbers
+      SEC(  1.. 24) := To_Bytes( ECZ.A );
+      SEC( 25.. 48) := To_Bytes( ECZ.B );
+      SEC( 49.. 72) := To_Bytes( ECZ.P );
+      return SEC;
+   end Serialize;
+
+   ---------------------------------------------------------------------------
+
+   function Deserialize(SEC : in Serialized_EC) return Elliptic_Curve_Zp is
+      use Crypto.Types;
+      ECZ : Elliptic_Curve_Zp;
+   begin
+      ECZ.A  := To_Big_Unsigned( SEC(  1.. 24) );
+      ECZ.B  := To_Big_Unsigned( SEC( 25.. 48) );
+      ECZ.P  := To_Big_Unsigned( SEC( 49.. 72) );
+      return ECZ;
+   end Deserialize;
+
+
 end Crypto.Types.Elliptic_Curves.Zp;

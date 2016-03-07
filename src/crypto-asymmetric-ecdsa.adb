@@ -180,4 +180,118 @@ package body Crypto.Asymmetric.ECDSA is
 
 -------------------------------------------------------------------------------
 
+   procedure Serialize_PubPrivSig
+      ( Public_Key  : in     Public_Key_ECDSA;
+        Private_Key : in     Private_Key_ECDSA;
+        Signature   : in     Signature_ECDSA;
+        Stream      :    out Serialized_PubPrivSig ) is
+   begin
+      Stream(  1..192) := Serialize_Public_key(Public_Key);
+      Stream(145..216) := Serialize_Private_key(Private_Key);
+      Stream(217..264) := Serialize_Signature(Signature);
+   end Serialize_PubPrivSig;
+
+-------------------------------------------------------------------------------
+
+   procedure Deserialize_PubPrivSig
+      ( Stream      : in     Serialized_PubPrivSig;
+        Public_Key  :    out Public_Key_ECDSA;
+        Private_Key :    out Private_Key_ECDSA;
+        Signature   :    out Signature_ECDSA ) is
+   begin
+      Public_Key  := Deserialize_Public_Key(Stream(1..192));
+      Private_Key := Deserialize_Private_Key(Stream(145..216));
+      Signature   := Deserialize_Signature(Stream(217..264));
+   end Deserialize_PubPrivSig;
+
+-------------------------------------------------------------------------------
+
+   procedure Serialize_PubSig
+      ( Public_Key  : in     Public_Key_ECDSA;
+        Signature   : in     Signature_ECDSA;
+        Stream      :    out Serialized_PubSig ) is
+   begin
+      Stream(  1..192) := Serialize_Public_key(Public_Key);
+      Stream(193..240) := Serialize_Signature(Signature);
+   end Serialize_PubSig;
+
+-------------------------------------------------------------------------------
+
+   procedure Deserialize_PubSig
+      ( Stream      : in     Serialized_PubSig;
+        Public_Key  :    out Public_Key_ECDSA;
+        Signature   :    out Signature_ECDSA ) is
+   begin
+      Public_Key := Deserialize_Public_Key(Stream(1..192));
+      Signature  := Deserialize_Signature(Stream(193..240));
+   end Deserialize_PubSig;
+
+-------------------------------------------------------------------------------
+
+   function Serialize_Public_key(
+                  PK : in Public_Key_ECDSA) return Serialized_PubKey is
+      SPK : Serialized_PubKey;
+   begin
+      SPK(  1.. 72) := Zp.Serialize(PK.E);
+      SPK( 73.. 96) := To_Bytes( PK.P.X );
+      SPK( 97..120) := To_Bytes( PK.P.Y );
+      SPK(121..144) := To_Bytes( PK.n );
+      SPK(145..168) := To_Bytes( PK.Q.X );
+      SPK(169..192) := To_Bytes( PK.Q.Y );
+      return SPK;
+   end Serialize_Public_key;
+
+   function Serialize_Private_key(
+                  PK : in Private_Key_ECDSA) return Serialized_PrivKey is
+      SPK : Serialized_PrivKey;
+   begin
+      SPK( 1..24) := To_Bytes( PK.Q.X );
+      SPK(25..48) := To_Bytes( PK.Q.Y );
+      SPK(49..72) := To_Bytes( PK.d );
+      return SPK;
+   end Serialize_Private_key;
+
+   function Serialize_Signature(
+                  Sig : in Signature_ECDSA) return Serialized_Sig is
+      SSig : Serialized_Sig;
+   begin
+      SSig( 1..24) := To_Bytes( Sig.R );
+      SSig(25..48) := To_Bytes( Sig.S );
+      return SSig;
+   end Serialize_Signature;
+
+-------------------------------------------------------------------------------
+
+   function Deserialize_Public_Key(
+                  SPK : in Serialized_PubKey) return Public_Key_ECDSA is
+      PK : Public_Key_ECDSA;
+   begin
+      PK.E    := Zp.Deserialize( SPK(1.. 72) );
+      PK.P.X  := To_Big_Unsigned( SPK( 73.. 96) );
+      PK.P.Y  := To_Big_Unsigned( SPK( 97..120) );
+      PK.n    := To_Big_Unsigned( SPK(121..144) );
+      PK.Q.X  := To_Big_Unsigned( SPK(145..168) );
+      PK.Q.Y  := To_Big_Unsigned( SPK(169..192) );
+      return PK;
+   end Deserialize_Public_Key;
+
+   function Deserialize_Private_Key(
+                  SPK : in Serialized_PrivKey) return Private_Key_ECDSA is
+      PK : Private_Key_ECDSA;
+   begin
+      PK.Q.X := To_Big_Unsigned( SPK( 1..24) );
+      PK.Q.Y := To_Big_Unsigned( SPK(25..48) );
+      PK.d   := To_Big_Unsigned( SPK(49..72) );
+      return PK;
+   end Deserialize_Private_Key;
+
+   function Deserialize_Signature(
+                  SSig : in Serialized_Sig) return Signature_ECDSA is
+      Sig : Signature_ECDSA;
+   begin
+      Sig.R := To_Big_Unsigned( SSig( 1..24) );
+      Sig.S := To_Big_Unsigned( SSig(25..48) );
+      return Sig;
+   end Deserialize_Signature;
+
 end Crypto.Asymmetric.ECDSA;

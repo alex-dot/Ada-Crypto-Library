@@ -32,6 +32,7 @@ package Crypto.Types.Elliptic_Curves.Zp is
    
    
    type Elliptic_Curve_Zp is private;
+   subtype Serialized_EC is Crypto.Types.Bytes(1..72);
    
    -- init an elliptic curve over Z_p
    procedure Init(A, B, P : in Big_Unsigned);
@@ -59,12 +60,17 @@ package Crypto.Types.Elliptic_Curves.Zp is
    function "*"(Left : Big_Unsigned; Right : EC_Point) return EC_Point;
    
    function Get_P(ECZ : in Elliptic_Curve_Zp) return  Big_Unsigned;
+
+   function Serialize(ECZ : in Elliptic_Curve_Zp) return Serialized_EC;
+
+   function Deserialize(SEC : in Serialized_EC) return Elliptic_Curve_Zp;
    
    ---------------------------------------------------------------------------
    --------------------------------PRIVATE------------------------------------
    ---------------------------------------------------------------------------
  
 private
+
       type Elliptic_Curve_Zp is record
 	 A : Big_Unsigned;
 	 B : Big_Unsigned;
