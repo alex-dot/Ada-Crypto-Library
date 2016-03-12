@@ -242,44 +242,30 @@ package body Crypto.Asymmetric.ECDSA is
                   PK : in Public_Key_ECDSA) return Serialized_PubKey is
       SPK            : Serialized_PubKey;
       Offset         : Natural := 1;
-      Length         : Natural;
-      Rounded_Length : Natural := 0;
-      Temp_Length    : Natural;
+      Length         : Natural := 0;
    begin
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + Zp.Serialized_EC'Length;
-      Rounded_Length := Temp_Length + Zp.Serialized_EC'Length;
+      Length := Length + Zp.Serialized_EC'Length;
       SPK(Offset..Length) := Zp.Serialize(PK.E);
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.P.X )'Length;
-      Rounded_Length := Temp_Length + PK.P.X'Size/8;
+      Length := Length + To_Bytes( PK.P.X )'Length;
       SPK(Offset..Length) := To_Bytes( PK.P.X );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.P.Y )'Length;
-      Rounded_Length := Temp_Length + PK.P.Y'Size/8;
+      Length := Length + To_Bytes( PK.P.Y )'Length;
       SPK(Offset..Length) := To_Bytes( PK.P.Y );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.n )'Length;
-      Rounded_Length := Temp_Length + PK.n'Size/8;
+      Length := Length + To_Bytes( PK.n )'Length;
       SPK(Offset..Length) := To_Bytes( PK.n );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.Q.X )'Length;
-      Rounded_Length := Temp_Length + PK.Q.X'Size/8;
+      Length := Length + To_Bytes( PK.Q.X )'Length;
       SPK(Offset..Length) := To_Bytes( PK.Q.X );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.Q.Y )'Length;
-      Rounded_Length := Temp_Length + PK.Q.Y'Size/8;
+      Length := Length + To_Bytes( PK.Q.Y )'Length;
       SPK(Offset..Length) := To_Bytes( PK.Q.Y );
 
       return SPK;
@@ -289,26 +275,18 @@ package body Crypto.Asymmetric.ECDSA is
                   PK : in Private_Key_ECDSA) return Serialized_PrivKey is
       SPK            : Serialized_PrivKey;
       Offset         : Natural := 1;
-      Length         : Natural;
-      Rounded_Length : Natural := 0;
-      Temp_Length    : Natural;
+      Length         : Natural := 0;
    begin
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.Q.X )'Length;
-      Rounded_Length := Temp_Length + PK.Q.X'Size/8;
+      Length := Length + To_Bytes( PK.Q.X )'Length;
       SPK(Offset..Length) := To_Bytes( PK.Q.X );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.Q.Y )'Length;
-      Rounded_Length := Temp_Length + PK.Q.Y'Size/8;
+      Length := Length + To_Bytes( PK.Q.Y )'Length;
       SPK(Offset..Length) := To_Bytes( PK.Q.Y );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( PK.d )'Length;
-      Rounded_Length := Temp_Length + PK.d'Size/8;
+      Length := Length + To_Bytes( PK.d )'Length;
       SPK(Offset..Length) := To_Bytes( PK.d );
 
       return SPK;
@@ -318,20 +296,14 @@ package body Crypto.Asymmetric.ECDSA is
                   Sig : in Signature_ECDSA) return Serialized_Sig is
       SSig           : Serialized_Sig;
       Offset         : Natural := 1;
-      Length         : Natural;
-      Rounded_Length : Natural := 0;
-      Temp_Length    : Natural;
+      Length         : Natural := 0;
    begin
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( Sig.R )'Length;
-      Rounded_Length := Temp_Length + Sig.R'Size/8;
+      Length := Length + To_Bytes( Sig.R )'Length;
       SSig(Offset..Length) := To_Bytes( Sig.R );
-      Offset := Rounded_Length + 1;
+      Offset := Length + 1;
 
-      Temp_Length    := Rounded_Length;
-      Length         := Temp_Length + To_Bytes( Sig.S )'Length;
-      Rounded_Length := Temp_Length + Sig.S'Size/8;
+      Length := Length + To_Bytes( Sig.S )'Length;
       SSig(Offset..Length) := To_Bytes( Sig.S );
 
       return SSig;
@@ -341,14 +313,22 @@ package body Crypto.Asymmetric.ECDSA is
 
    function Deserialize_Public_Key(
                   SPK : in Serialized_PubKey) return Public_Key_ECDSA is
-      PK : Public_Key_ECDSA;
+      PK     : Public_Key_ECDSA;
+      Offset : Natural := 1;
+      Step   : constant Natural
+         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      PK.E    := Zp.Deserialize( SPK(1.. 72) );
-      PK.P.X  := To_Big_Unsigned( SPK( 73.. 96) );
-      PK.P.Y  := To_Big_Unsigned( SPK( 97..120) );
-      PK.n    := To_Big_Unsigned( SPK(121..144) );
-      PK.Q.X  := To_Big_Unsigned( SPK(145..168) );
-      PK.Q.Y  := To_Big_Unsigned( SPK(169..192) );
+      PK.E    := Zp.Deserialize( SPK(Offset..3*Step) );
+      Offset  := Offset + 3*Step;
+      PK.P.X  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
+      Offset  := Offset + Step;
+      PK.P.Y  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
+      Offset  := Offset + Step;
+      PK.n    := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
+      Offset  := Offset + Step;
+      PK.Q.X  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
+      Offset  := Offset + Step;
+      PK.Q.Y  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
       return PK;
    end Deserialize_Public_Key;
 
@@ -356,9 +336,9 @@ package body Crypto.Asymmetric.ECDSA is
                   SPK : in Serialized_PrivKey) return Private_Key_ECDSA is
       PK : Private_Key_ECDSA;
    begin
-      PK.Q.X := To_Big_Unsigned( SPK( 1..24) );
-      PK.Q.Y := To_Big_Unsigned( SPK(25..48) );
-      PK.d   := To_Big_Unsigned( SPK(49..72) );
+      PK.Q.X := To_Big_Unsigned( SPK( 1..20) );
+      PK.Q.Y := To_Big_Unsigned( SPK(21..40) );
+      PK.d   := To_Big_Unsigned( SPK(41..60) );
       return PK;
    end Deserialize_Private_Key;
 
@@ -366,8 +346,8 @@ package body Crypto.Asymmetric.ECDSA is
                   SSig : in Serialized_Sig) return Signature_ECDSA is
       Sig : Signature_ECDSA;
    begin
-      Sig.R := To_Big_Unsigned( SSig( 1..24) );
-      Sig.S := To_Big_Unsigned( SSig(25..48) );
+      Sig.R := To_Big_Unsigned( SSig( 1..20) );
+      Sig.S := To_Big_Unsigned( SSig(21..40) );
       return Sig;
    end Deserialize_Signature;
 

@@ -353,9 +353,9 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
       use Crypto.Types;
       ECZ : Elliptic_Curve_Zp;
    begin
-      ECZ.A  := To_Big_Unsigned( SEC(  1.. 24) );
-      ECZ.B  := To_Big_Unsigned( SEC( 25.. 48) );
-      ECZ.P  := To_Big_Unsigned( SEC( 49.. 72) );
+      ECZ.A  := To_Big_Unsigned( SEC(  1.. 20) );
+      ECZ.B  := To_Big_Unsigned( SEC( 21.. 40) );
+      ECZ.P  := To_Big_Unsigned( SEC( 41.. 60) );
       return ECZ;
    end Deserialize;
 

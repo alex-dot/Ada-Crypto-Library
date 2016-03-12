@@ -32,7 +32,7 @@ package Crypto.Types.Elliptic_Curves.Zp is
    
    
    type Elliptic_Curve_Zp is private;
-   subtype Serialized_EC is Crypto.Types.Bytes(1..3*Big.Big_Unsigned'Size/8);
+   subtype Serialized_EC is Crypto.Types.Bytes(1..3*Big.Utils.To_Bytes( Big.Big_Unsigned_Last )'Length);
    
    -- init an elliptic curve over Z_p
    procedure Init(A, B, P : in Big_Unsigned);
