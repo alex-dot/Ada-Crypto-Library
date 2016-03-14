@@ -188,16 +188,15 @@ package body Crypto.Asymmetric.ECDSA is
       Offset      : Natural := 1;
       Length      : Natural := 0;
    begin
-      Length := Length + 8*Big.Big_Unsigned'Size/8;
+      Length := Length + Serialized_PubKey'Length;
       Stream(Offset..Length) := Serialize_Public_key(Public_Key);
       Offset := Length + 1;
 
-      Offset := Offset - 2*Big.Big_Unsigned'Size/8; -- we save here
-      Length := Length + 1*Big.Big_Unsigned'Size/8;
+      Length := Length + Serialized_PrivKey'Length;
       Stream(Offset..Length) := Serialize_Private_key(Private_Key);
       Offset := Length + 1;
 
-      Length := Length + 2*Big.Big_Unsigned'Size/8;
+      Length := Length + Serialized_Sig'Length;
       Stream(Offset..Length) := Serialize_Signature(Signature);
    end Serialize_PubPrivSig;
 
@@ -208,10 +207,19 @@ package body Crypto.Asymmetric.ECDSA is
         Public_Key  :    out Public_Key_ECDSA;
         Private_Key :    out Private_Key_ECDSA;
         Signature   :    out Signature_ECDSA ) is
+      Offset      : Natural := 1;
+      Length      : Natural := 0;
    begin
-      Public_Key  := Deserialize_Public_Key(Stream(1..192));
-      Private_Key := Deserialize_Private_Key(Stream(145..216));
-      Signature   := Deserialize_Signature(Stream(217..264));
+      Length := Length + Serialized_PubKey'Length;
+      Public_Key  := Deserialize_Public_Key(Stream(Offset..Length));
+      Offset := Length + 1;
+
+      Length := Length + Serialized_PrivKey'Length;
+      Private_Key := Deserialize_Private_Key(Stream(Offset..Length));
+      Offset := Length + 1;
+
+      Length := Length + Serialized_Sig'Length;
+      Signature   := Deserialize_Signature(Stream(Offset..Length));
    end Deserialize_PubPrivSig;
 
 -------------------------------------------------------------------------------
@@ -220,9 +228,15 @@ package body Crypto.Asymmetric.ECDSA is
       ( Public_Key  : in     Public_Key_ECDSA;
         Signature   : in     Signature_ECDSA;
         Stream      :    out Serialized_PubSig ) is
+      Offset      : Natural := 1;
+      Length      : Natural := 0;
    begin
-      Stream(  1..192) := Serialize_Public_key(Public_Key);
-      Stream(193..240) := Serialize_Signature(Signature);
+      Length := Length + Serialized_PubKey'Length;
+      Stream(Offset..Length) := Serialize_Public_key(Public_Key);
+      Offset := Length + 1;
+
+      Length := Length + Serialized_Sig'Length;
+      Stream(Offset..Length) := Serialize_Signature(Signature);
    end Serialize_PubSig;
 
 -------------------------------------------------------------------------------
@@ -231,9 +245,15 @@ package body Crypto.Asymmetric.ECDSA is
       ( Stream      : in     Serialized_PubSig;
         Public_Key  :    out Public_Key_ECDSA;
         Signature   :    out Signature_ECDSA ) is
+      Offset      : Natural := 1;
+      Length      : Natural := 0;
    begin
-      Public_Key := Deserialize_Public_Key(Stream(1..192));
-      Signature  := Deserialize_Signature(Stream(193..240));
+      Length := Length + Serialized_PubKey'Length;
+      Public_Key := Deserialize_Public_Key(Stream(Offset..Length));
+      Offset := Length + 1;
+
+      Length := Length + Serialized_Sig'Length;
+      Signature  := Deserialize_Signature(Stream(Offset..Length));
    end Deserialize_PubSig;
 
 -------------------------------------------------------------------------------
@@ -315,39 +335,48 @@ package body Crypto.Asymmetric.ECDSA is
                   SPK : in Serialized_PubKey) return Public_Key_ECDSA is
       PK     : Public_Key_ECDSA;
       Offset : Natural := 1;
-      Step   : constant Natural
+      Length : constant Natural
          := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      PK.E    := Zp.Deserialize( SPK(Offset..3*Step) );
-      Offset  := Offset + 3*Step;
-      PK.P.X  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
-      Offset  := Offset + Step;
-      PK.P.Y  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
-      Offset  := Offset + Step;
-      PK.n    := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
-      Offset  := Offset + Step;
-      PK.Q.X  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
-      Offset  := Offset + Step;
-      PK.Q.Y  := To_Big_Unsigned( SPK(Offset..Offset+Step-1) );
+      PK.E    := Zp.Deserialize( SPK(Offset..3*Length) );
+      Offset  := Offset + 3*Length;
+      PK.P.X  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      Offset  := Offset + Length;
+      PK.P.Y  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      Offset  := Offset + Length;
+      PK.n    := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      Offset  := Offset + Length;
+      PK.Q.X  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      Offset  := Offset + Length;
+      PK.Q.Y  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
       return PK;
    end Deserialize_Public_Key;
 
    function Deserialize_Private_Key(
                   SPK : in Serialized_PrivKey) return Private_Key_ECDSA is
-      PK : Private_Key_ECDSA;
+      PK     : Private_Key_ECDSA;
+      Offset : Natural := 1;
+      Length : constant Natural
+         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      PK.Q.X := To_Big_Unsigned( SPK( 1..20) );
-      PK.Q.Y := To_Big_Unsigned( SPK(21..40) );
-      PK.d   := To_Big_Unsigned( SPK(41..60) );
+      PK.Q.X := To_Big_Unsigned( SPK(Offset..Length) );
+      Offset  := Offset + Length;
+      PK.Q.Y := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      Offset  := Offset + Length;
+      PK.d   := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
       return PK;
    end Deserialize_Private_Key;
 
    function Deserialize_Signature(
                   SSig : in Serialized_Sig) return Signature_ECDSA is
-      Sig : Signature_ECDSA;
+      Sig    : Signature_ECDSA;
+      Offset : Natural := 1;
+      Length : constant Natural
+         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      Sig.R := To_Big_Unsigned( SSig( 1..20) );
-      Sig.S := To_Big_Unsigned( SSig(21..40) );
+      Sig.R := To_Big_Unsigned( SSig(Offset..Length) );
+      Offset  := Offset + Length;
+      Sig.S := To_Big_Unsigned( SSig(Offset..Offset+Length-1) );
       return Sig;
    end Deserialize_Signature;
 
