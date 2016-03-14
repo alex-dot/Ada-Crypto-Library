@@ -44,32 +44,18 @@ package Crypto.Asymmetric.ECDSA is
    type Private_Key_ECDSA is private;
    type Signature_ECDSA is private;
 
---   subtype Serialized_PubKey     is Bytes(1..Public_Key_ECDSA'Size);
---   subtype Serialized_PrivKey    is Bytes(1..Private_Key_ECDSA'Size);
---   subtype Serialized_Sig        is Bytes(1..Signature_ECDSA'Size);
---   subtype Serialized_PubSig
---      is Bytes(1..(Public_Key_ECDSA'Size+Signature_ECDSA'Size));
---   subtype Serialized_PubPrivSig
---      is Bytes(1..(Public_Key_ECDSA'Size+Private_Key_ECDSA'Size+Signature_ECDSA'Size));
-
-   -- Note about serialization size: even though the actual keys
-   -- can have a smaller size, for simplicity the serialized size
-   -- is always the size of the ECDSA instantiation
    subtype Serialized_PubKey
-      is Bytes(1..8*Big.Big_Unsigned'Size/8);
+      is Bytes(1..8*Big.Utils.To_Bytes(Big.Big_Unsigned_Last)'Length);
    subtype Serialized_PrivKey
-      is Bytes(1..3*Big.Big_Unsigned'Size/8);
+      is Bytes(1..3*Big.Utils.To_Bytes(Big.Big_Unsigned_Last)'Length);
    subtype Serialized_Sig
-      is Bytes(1..2*Big.Big_Unsigned'Size/8);
+      is Bytes(1..2*Big.Utils.To_Bytes(Big.Big_Unsigned_Last)'Length);
    subtype Serialized_PubSig
       is Bytes(1..(Serialized_PubKey'Length+Serialized_Sig'Length));
    subtype Serialized_PubPrivSig
       is Bytes(1..(Serialized_PubKey'Length
                   +Serialized_PrivKey'Length
-                  -2*Big.Big_Unsigned'Size/8
                   +Serialized_Sig'Length));
-                  -- we can save this from the PrivKey because
-                  -- Q is already present in the PubKey
 
 -------------------------------------------------------------------------------
 

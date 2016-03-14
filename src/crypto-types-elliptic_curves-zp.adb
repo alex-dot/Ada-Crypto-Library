@@ -330,10 +330,10 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
 
    function Serialize(ECZ : in Elliptic_Curve_Zp) return Serialized_EC is
       use Crypto.Types;
-      SEC               : Serialized_EC := (others => 0);
-      Offset            : Natural := 1;
-      Length            : Natural := 0;
-   begin -- delete magic numbers
+      SEC    : Serialized_EC := (others => 0);
+      Offset : Natural := 1;
+      Length : Natural := 0;
+   begin
       Length := Length + To_Bytes( ECZ.A )'Length;
       SEC(Offset..Length) := To_Bytes( ECZ.A );
       Offset := Length + 1;
@@ -351,11 +351,20 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
 
    function Deserialize(SEC : in Serialized_EC) return Elliptic_Curve_Zp is
       use Crypto.Types;
-      ECZ : Elliptic_Curve_Zp;
+      ECZ    : Elliptic_Curve_Zp;
+      Offset : Natural := 1;
+      Length : Natural := 0;
    begin
-      ECZ.A  := To_Big_Unsigned( SEC(  1.. 20) );
-      ECZ.B  := To_Big_Unsigned( SEC( 21.. 40) );
-      ECZ.P  := To_Big_Unsigned( SEC( 41.. 60) );
+      Length := Length + To_Bytes( ECZ.A )'Length;
+      ECZ.A  := To_Big_Unsigned( SEC(Offset..Length) );
+      Offset := Length + 1;
+
+      Length := Length + To_Bytes( ECZ.B )'Length;
+      ECZ.B  := To_Big_Unsigned( SEC(Offset..Length) );
+      Offset := Length + 1;
+
+      Length := Length + To_Bytes( ECZ.B )'Length;
+      ECZ.P  := To_Big_Unsigned( SEC(Offset..Length) );
       return ECZ;
    end Deserialize;
 
