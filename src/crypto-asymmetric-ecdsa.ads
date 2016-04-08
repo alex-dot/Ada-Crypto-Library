@@ -160,7 +160,6 @@ package Crypto.Asymmetric.ECDSA is
 
 private
 
-
    type ECDSA_P_KEY is record
       E : Elliptic_Curve_Zp;
       P : EC_Point; --x,y
@@ -181,6 +180,9 @@ private
    type Public_Key_ECDSA is new ECDSA_P_KEY;
    type Private_Key_ECDSA is new ECDSA_S_KEY;
    type Signature_ECDSA is new ECDSA_KEY;
+
+   DB_Bit_Length : Natural;
+
 
    pragma Optimize (Time);
 

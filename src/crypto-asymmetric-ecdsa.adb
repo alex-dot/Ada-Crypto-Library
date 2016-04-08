@@ -59,6 +59,7 @@ package body Crypto.Asymmetric.ECDSA is
    begin
       Get_Elliptic_Curve(Public_Key.E, Public_Key.P, Public_Key.n, length);
       init(Public_Key.E);
+      DB_Bit_Length := Natural(length / 8);
    end Gen_Public_Key;
    
    ----------------------------------------------------------------------------
@@ -108,7 +109,7 @@ package body Crypto.Asymmetric.ECDSA is
                    Signature   : Signature_ECDSA) return Boolean is
       W  : constant Big_Unsigned := Inverse(Signature.S, Public_Key.n);
       U1 : constant Big_Unsigned := Mult(To_Big_Unsigned(To_Bytes(Sha1_Hash)),
-					 W,Public_Key.n);
+                W,Public_Key.n);
       U2 : constant Big_Unsigned := Mult(Signature.R, W, Public_Key.n);
       tmp_EC: constant EC_Point := (U1 * Public_Key.P) + (U2 * Public_Key.Q);
       V : constant Big_Unsigned:= tmp_EC.x mod Get_P(Public_Key.E);
@@ -335,20 +336,18 @@ package body Crypto.Asymmetric.ECDSA is
                   SPK : in Serialized_PubKey) return Public_Key_ECDSA is
       PK     : Public_Key_ECDSA;
       Offset : Natural := 1;
-      Length : constant Natural
-         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      PK.E    := Zp.Deserialize( SPK(Offset..3*Length) );
-      Offset  := Offset + 3*Length;
-      PK.P.X  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
-      Offset  := Offset + Length;
-      PK.P.Y  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
-      Offset  := Offset + Length;
-      PK.n    := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
-      Offset  := Offset + Length;
-      PK.Q.X  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
-      Offset  := Offset + Length;
-      PK.Q.Y  := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      PK.E    := Zp.Deserialize( SPK(Offset..3*DB_Bit_Length) );
+      Offset  := Offset + 3*DB_Bit_Length;
+      PK.P.X  := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.P.Y  := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.n    := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.Q.X  := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.Q.Y  := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
       return PK;
    end Deserialize_Public_Key;
 
@@ -356,14 +355,12 @@ package body Crypto.Asymmetric.ECDSA is
                   SPK : in Serialized_PrivKey) return Private_Key_ECDSA is
       PK     : Private_Key_ECDSA;
       Offset : Natural := 1;
-      Length : constant Natural
-         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      PK.Q.X := To_Big_Unsigned( SPK(Offset..Length) );
-      Offset  := Offset + Length;
-      PK.Q.Y := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
-      Offset  := Offset + Length;
-      PK.d   := To_Big_Unsigned( SPK(Offset..Offset+Length-1) );
+      PK.Q.X := To_Big_Unsigned( SPK(Offset..DB_Bit_Length) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.Q.Y := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
+      Offset  := Offset + DB_Bit_Length;
+      PK.d   := To_Big_Unsigned( SPK(Offset..Offset+DB_Bit_Length-1) );
       return PK;
    end Deserialize_Private_Key;
 
@@ -371,12 +368,10 @@ package body Crypto.Asymmetric.ECDSA is
                   SSig : in Serialized_Sig) return Signature_ECDSA is
       Sig    : Signature_ECDSA;
       Offset : Natural := 1;
-      Length : constant Natural
-         := To_Bytes( Big.Big_Unsigned_Last )'Length;
    begin
-      Sig.R := To_Big_Unsigned( SSig(Offset..Length) );
-      Offset  := Offset + Length;
-      Sig.S := To_Big_Unsigned( SSig(Offset..Offset+Length-1) );
+      Sig.R := To_Big_Unsigned( SSig(Offset..DB_Bit_Length) );
+      Offset  := Offset + DB_Bit_Length;
+      Sig.S := To_Big_Unsigned( SSig(Offset..Offset+DB_Bit_Length-1) );
       return Sig;
    end Deserialize_Signature;
 

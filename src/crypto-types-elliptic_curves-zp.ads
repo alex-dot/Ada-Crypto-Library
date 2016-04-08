@@ -33,7 +33,12 @@ package Crypto.Types.Elliptic_Curves.Zp is
    
    type Elliptic_Curve_Zp is private;
    subtype Serialized_EC is
-      Crypto.Types.Bytes(1..3*Big.Utils.To_Bytes(Big.Big_Unsigned_Last)'Length);
+      Crypto.Types.Bytes(1..3*32);
+   -- Sorry for the magic number. The ACL is a pain here. 
+   -- You'd have to know Len from Init to correctly set this. 
+   -- But the initialization API is currently broken anyway, 
+   -- so fix this after fixing the API. Until then it is assumed
+   -- that Len/8 = 32. 
    
    -- init an elliptic curve over Z_p
    procedure Init(A, B, P : in Big_Unsigned);

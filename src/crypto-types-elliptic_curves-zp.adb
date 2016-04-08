@@ -355,15 +355,15 @@ package body  Crypto.Types.Elliptic_Curves.Zp is
       Offset : Natural := 1;
       Length : Natural := 0;
    begin
-      Length := Length + To_Bytes( ECZ.A )'Length;
+      Length := Length + Serialized_EC'Length/3;
       ECZ.A  := To_Big_Unsigned( SEC(Offset..Length) );
       Offset := Length + 1;
 
-      Length := Length + To_Bytes( ECZ.B )'Length;
+      Length := Length + Serialized_EC'Length/3;
       ECZ.B  := To_Big_Unsigned( SEC(Offset..Length) );
       Offset := Length + 1;
 
-      Length := Length + To_Bytes( ECZ.B )'Length;
+      Length := Length + Serialized_EC'Length/3;
       ECZ.P  := To_Big_Unsigned( SEC(Offset..Length) );
       return ECZ;
    end Deserialize;
